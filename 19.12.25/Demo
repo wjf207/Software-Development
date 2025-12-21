@@ -1,0 +1,95 @@
+import java.util.EventObject;
+import java.util.EventListener;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/* -----------------------------
+ * EVENT
+ * -----------------------------
+ * Must extend EventObject
+ */
+class SimpleEvent extends EventObject {
+    public SimpleEvent(Object source) {
+        super(source);
+    }
+}
+
+/* -----------------------------
+ * LISTENER
+ * -----------------------------
+ * Must extend EventListener
+ */
+interface SimpleEventListener extends EventListener {
+    void eventOccurred(SimpleEvent e);
+}
+
+/* -----------------------------
+ * SOURCE
+ * -----------------------------
+ * Generates events and notifies listeners
+ */
+class SimpleSource {
+
+    private SimpleEventListener listener;
+
+    // Registration method (delegation model)
+    public void addSimpleEventListener(SimpleEventListener l) {
+        this.listener = l;
+    }
+
+    // Trigger the event
+    public void fireEvent() {
+        if (listener != null) {
+            listener.eventOccurred(new SimpleEvent(this));
+        }
+    }
+}
+
+/* -----------------------------
+ * APPLICATION
+ * -----------------------------
+ * Acts as both GUI listener and custom event listener
+ */
+public class EventDemo implements ActionListener, SimpleEventListener {
+
+    private SimpleSource source = new SimpleSource();
+
+    public EventDemo() {
+        // Register listener
+        source.addSimpleEventListener(this);
+
+        // GUI setup (event source provided by Swing)
+        JButton button = new JButton("Click me");
+        button.addActionListener(this);
+
+        JFrame frame = new JFrame("Event Demo");
+        frame.add(button);
+        frame.setSize(200, 100);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
+    /* -----------------------------
+     * GUI EVENT HANDLER
+     * -----------------------------
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // GUI event causes custom event
+        source.fireEvent();
+    }
+
+    /* -----------------------------
+     * CUSTOM EVENT HANDLER
+     * -----------------------------
+     */
+    @Override
+    public void eventOccurred(SimpleEvent e) {
+        System.out.println("Custom event received from source");
+    }
+
+    public static void main(String[] args) {
+        new EventDemo();
+    }
+}
